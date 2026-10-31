@@ -1,0 +1,74 @@
+name: Deploy web app to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths: ["web/**", ".github/workflows/pages.yml"]
+  pull_request:
+    paths: ["web/**", ".github/workflows/pages.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Test tide math
+        working-directory: web
+        run: npm test
+
+      - name: Bundle site
+        run: |
+          mkdir -p _site
+          cp -r web/index.html web/styles.css web/icon.svg web/manifest.webmanifest web/js _site/
+
+      # Snapshot NOAA's station list so the page loads fast. The page falls back
+      # to the live API if this file is missing.
+      - name: Snapshot NOAA station list
+        continue-on-error: true
+        run: |
+          curl -fsS --retry 3 -o stations.raw.json \
+            "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations.json?type=tidepredictions"
+          node -e '
+            const r = require("./stations.raw.json");
+            const s = r.stations.map(({ id, name, state, lat, lng }) => ({ id, name, state, lat, lng }));
+            require("fs").writeFileSync("_site/stations.json", JSON.stringify({ stations: s }));
+            console.log(s.length + " stations");'
+
+      # The browser calls NOAA directly, so log the CORS headers it sends.
+      - name: Check NOAA CORS headers
+        continue-on-error: true
+        run: |
+          curl -sS -D - -o /dev/null -H "Origin: https://${{ github.repository_owner }}.github.io" \
+            "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?station=9414290&product=predictions&interval=hilo&datum=MLLW&units=english&time_zone=gmt&format=json&date=today" \
+            | grep -i -E "^(HTTP|access-control)"
+
+      - uses: actions/upload-pages-artifact@v3
+        if: github.event_name != 'pull_request'
+        with:
+          path: _site
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v5
+      - id: deployment
+        uses: actions/deploy-pages@v4

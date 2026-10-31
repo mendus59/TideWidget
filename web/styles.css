@@ -1,0 +1,137 @@
+:root {
+  --bg: #f4f7fb;
+  --surface: rgba(255, 255, 255, 0.94);
+  --sheet: #ffffff;
+  --text: #0f1b2a;
+  --muted: #5b6b7f;
+  --line: #1a6fd1;
+  --border: rgba(15, 27, 42, 0.12);
+  --shadow: 0 6px 24px rgba(15, 27, 42, 0.18);
+  --accent: #1a6fd1;
+  --error: #b3261e;
+  --error-bg: #fde7e5;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b1420;
+    --surface: rgba(20, 30, 44, 0.94);
+    --sheet: #141e2c;
+    --text: #e8eef6;
+    --muted: #9aa9bb;
+    --line: #5aa9ff;
+    --border: rgba(232, 238, 246, 0.14);
+    --shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+    --accent: #5aa9ff;
+    --error: #ffb4ab;
+    --error-bg: #5c1a15;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--bg); color: var(--text);
+  font: 15px/1.35 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  overflow: hidden;
+}
+#map { position: fixed; inset: 0; background: var(--bg); }
+.leaflet-container { font: inherit; background: var(--bg); }
+
+.card {
+  background: var(--surface); color: var(--text);
+  border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow);
+  backdrop-filter: blur(8px);
+}
+
+.topbar {
+  position: fixed; z-index: 1000; top: max(12px, env(safe-area-inset-top)); left: 16px; right: 16px;
+  display: flex; justify-content: center; pointer-events: none;
+}
+.search { position: relative; width: min(420px, 100%); pointer-events: auto; }
+.search input {
+  width: 100%; padding: 11px 14px; font: inherit; color: var(--text);
+  background: var(--surface); border: 1px solid var(--border); border-radius: 999px; box-shadow: var(--shadow);
+}
+.search input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+#results {
+  position: absolute; top: calc(100% + 6px); left: 0; right: 0; margin: 0; padding: 4px; list-style: none;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow);
+  max-height: 50vh; overflow: auto;
+}
+#results li { padding: 9px 12px; border-radius: 10px; cursor: pointer; }
+#results li[aria-selected="true"], #results li:hover { background: color-mix(in srgb, var(--accent) 14%, transparent); }
+#results small { color: var(--muted); }
+
+.mybeach {
+  position: fixed; z-index: 1000; top: calc(max(12px, env(safe-area-inset-top)) + 56px); right: 16px;
+  width: 210px; padding: 12px 14px; text-align: left; font: inherit; cursor: pointer;
+}
+.mb-head { display: flex; gap: 6px; font-weight: 700; margin-bottom: 6px; white-space: nowrap; overflow: hidden; }
+.mb-head span:last-child { overflow: hidden; text-overflow: ellipsis; }
+.mb-row { display: grid; grid-template-columns: 16px 34px 1fr; align-items: baseline; font-size: 14px; margin: 2px 0; }
+.mb-row .lbl { color: var(--muted); }
+.mb-row small { color: var(--muted); }
+.arrow.hi { color: rgb(224, 56, 51); }
+.arrow.lo { color: rgb(33, 89, 204); }
+.spark { width: 100%; height: 36px; margin-top: 6px; display: block; }
+
+.scrubber {
+  position: fixed; z-index: 1000; left: 16px; right: 16px; bottom: calc(max(12px, env(safe-area-inset-bottom)) + 18px);
+  margin: 0 auto; max-width: 560px; padding: 10px 16px 6px;
+}
+.scrub-head { display: flex; align-items: center; gap: 10px; }
+.scrub-head strong { flex: 1; text-align: center; font-size: 15px; }
+.legend { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--muted); }
+.legend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.play, .nowbtn {
+  font: inherit; font-size: 13px; color: var(--accent); background: none; cursor: pointer;
+  border: 1px solid var(--border); border-radius: 999px; padding: 3px 10px;
+}
+#slider { width: 100%; accent-color: var(--accent); margin: 8px 0 4px; }
+
+.sheet {
+  position: fixed; z-index: 1100; left: 0; right: 0; bottom: 0; margin: 0 auto; max-width: 560px;
+  max-height: 80vh; overflow: auto; padding: 18px 20px calc(20px + env(safe-area-inset-bottom));
+  background: var(--sheet); color: var(--text); border-radius: 20px 20px 0 0; box-shadow: var(--shadow);
+  border: 1px solid var(--border); border-bottom: 0;
+}
+.sheet h2 { margin: 0 32px 2px 0; font-size: 20px; }
+.sheet .sub { margin: 0 0 12px; color: var(--muted); font-size: 13px; }
+.close {
+  position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 50%;
+  border: 0; background: color-mix(in srgb, var(--text) 8%, transparent); color: var(--text); cursor: pointer; font-size: 14px;
+}
+.curve { width: 100%; height: 140px; display: block; }
+.axis { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 2px; }
+.events { list-style: none; margin: 12px 0; padding: 0; }
+.events li { display: flex; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); }
+.events li:last-child { border-bottom: 0; }
+.events .when { flex: 1; text-align: right; }
+.events .ht { color: var(--muted); width: 56px; text-align: right; }
+.primary {
+  width: 100%; padding: 12px; font: inherit; font-weight: 600; border: 0; border-radius: 12px; cursor: pointer;
+  background: var(--accent); color: #fff;
+}
+.primary[disabled] { background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--accent); cursor: default; }
+.nowbtn[hidden] { display: none; }
+
+.toast {
+  position: fixed; z-index: 1200; top: calc(max(12px, env(safe-area-inset-top)) + 56px); left: 16px; right: 240px;
+  max-width: 420px; padding: 10px 12px; border-radius: 10px; background: var(--error-bg); color: var(--error); box-shadow: var(--shadow);
+}
+
+.credit {
+  position: fixed; z-index: 900; bottom: max(2px, env(safe-area-inset-bottom)); left: 0; right: 0;
+  text-align: center; font-size: 11px; color: var(--muted); pointer-events: none;
+}
+.credit a { color: inherit; pointer-events: auto; }
+.leaflet-control-attribution { font-size: 10px; }
+.leaflet-bottom.leaflet-right { bottom: 120px; }
+
+@media (max-width: 560px) {
+  .mybeach { left: 16px; right: auto; width: auto; max-width: calc(100% - 32px); top: auto;
+    bottom: calc(max(12px, env(safe-area-inset-bottom)) + 108px); display: grid; grid-template-columns: 1fr 1fr; column-gap: 12px; padding: 10px 12px; }
+  .mb-head { grid-column: 1 / -1; }
+  .spark { display: none; }
+  .toast { right: 16px; }
+  .leaflet-bottom.leaflet-right { bottom: 200px; }
+}
