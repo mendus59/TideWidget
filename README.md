@@ -13,6 +13,7 @@ An Android tide app with a weather-map-style tide map and a home-screen widget s
 | Path | What |
 |---|---|
 | `tidecore/` | Pure Kotlin/JVM: NOAA CO-OPS client, models, tide math (next high/low, cosine interpolation between highs and lows, map color scale). Included build, unit tested. |
+| `web/` | Web version for GitHub Pages: same map, slider and station sheet, plus a pinned **My beach** card in place of the widget. Plain HTML/JS + Leaflet, no build step. |
 | `app/` | Android app: Compose + Google Maps (`map/`), Glance widget and WorkManager refresh (`widget/`), cached forecast (`data/`). |
 
 ## Build
@@ -25,6 +26,16 @@ An Android tide app with a weather-map-style tide map and a home-screen widget s
 3. Run the `app` configuration, tap a station, tap **Use for my widget**, then long-press the home screen and add the **Tides** widget.
 
 Core logic tests run without Android: `./gradlew -p tidecore test`.
+
+## Web version
+
+Live at **https://mendus59.github.io/TideWidget/** (deployed by `.github/workflows/pages.yml` on every push to `main` that touches `web/`).
+
+- Map tiles are OpenStreetMap/CARTO, so no Maps key is needed. The browser calls NOAA directly (the API sends CORS headers).
+- The deploy snapshots NOAA's station list into `stations.json`; the page falls back to the live API if it is missing.
+- **My beach** is saved in the browser (localStorage); San Francisco is the default.
+- Run locally: `cd web && python3 -m http.server`, then open http://localhost:8000. Tests: `cd web && npm test`.
+- First deploy only: in the repo's **Settings → Pages**, set Source to **GitHub Actions**.
 
 ## Data
 

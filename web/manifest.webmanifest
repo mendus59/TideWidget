@@ -1,0 +1,9 @@
+{
+  "name": "Tide Map",
+  "short_name": "Tides",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0b2540",
+  "theme_color": "#0b2540",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}
