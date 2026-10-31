@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Tides</string>
+    <string name="widget_description">Next high and low tide for your beach</string>
+</resources>

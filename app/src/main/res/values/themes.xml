@@ -1,0 +1,3 @@
+<resources>
+    <style name="Theme.Tides" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>
