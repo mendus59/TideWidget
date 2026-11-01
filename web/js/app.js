@@ -6,11 +6,14 @@ const START = Math.floor(Date.now() / 1000);
 const MY_BEACH_KEY = "tidewidget.mybeach";
 const MAX_PER_PAN = 60;     // stay polite to NOAA, same cap as the Android app
 const CONCURRENCY = 6;
+const DETAIL_DAYS = 7;      // the station sheet shows a full week
 
 const state = {
   stations: [],
   byId: new Map(),
-  forecasts: new Map(),     // id -> events
+  forecasts: new Map(),     // id -> events (~3 days, colors the map)
+  weekly: new Map(),        // id -> events (8+ days, for the station sheet)
+  curveHours: 24 * DETAIL_DAYS,
   loading: new Set(),
   markers: new Map(),       // id -> L.circleMarker
   offsetHours: 0,
@@ -51,6 +54,14 @@ async function getForecast(id) {
   if (state.forecasts.has(id)) return state.forecasts.get(id);
   const events = await fetchHighsAndLows(id, START - 6 * 3600, 72);
   state.forecasts.set(id, events);
+  return events;
+}
+
+async function getWeekly(id) {
+  if (state.weekly.has(id)) return state.weekly.get(id);
+  const events = await fetchHighsAndLows(id, START - 6 * 3600, 24 * (DETAIL_DAYS + 1));
+  state.weekly.set(id, events);
+  if (!state.forecasts.has(id)) state.forecasts.set(id, events);
   return events;
 }
 
@@ -142,6 +153,7 @@ function drawCurve(svg, events, { w, h, hours = 24, dot = true, pad = 4 }) {
     const v = height(events, now + i * 900);
     if (v != null) pts.push([i, v]);
   }
+  if (pts.length >= 2 && pts[pts.length - 1][0] < hours * 4) hours = pts[pts.length - 1][0] / 4;
   if (pts.length < 2) return false;
   const vs = pts.map((p) => p[1]);
   const lo = Math.min(...vs), hi = Math.max(Math.max(...vs), lo + 0.1);
@@ -169,10 +181,11 @@ async function openSheet(s) {
   $("sheet-title").textContent = label(s);
   $("sheet-sub").textContent = `NOAA station ${s.id} · Loading…`;
   $("sheet-curve").replaceChildren();
+  $("sheet-axis").replaceChildren();
   $("sheet-list").replaceChildren();
   updateUseButton();
   try {
-    const ev = await getForecast(s.id);
+    const ev = await getWeekly(s.id);
     paintMarker(s.id);
     if (state.selected !== s) return;
     renderSheet(s, ev);
@@ -185,16 +198,48 @@ function renderSheet(s, ev) {
   const now = Date.now() / 1000;
   const h = height(ev, now);
   $("sheet-sub").textContent = `NOAA station ${s.id}` + (h != null ? ` · ${ft(h)} now` : "");
-  drawCurve($("sheet-curve"), ev, { w: 400, h: 140 });
-  const items = ev.filter((e) => e.t > now).slice(0, 6).map((e) => {
+  renderSheetCurve(ev);
+  const fmtDay = new Intl.DateTimeFormat(undefined, { weekday: "long", month: "short", day: "numeric" });
+  const end = new Date(); end.setHours(0, 0, 0, 0); end.setDate(end.getDate() + DETAIL_DAYS);
+  const items = [];
+  let lastDay = "";
+  for (const e of ev.filter((e) => e.t > now && e.t * 1000 < end.getTime())) {
+    const d = new Date(e.t * 1000);
+    const day = d.toDateString();
+    if (day !== lastDay) {
+      lastDay = day;
+      const hd = document.createElement("li");
+      hd.className = "day";
+      hd.textContent = day === new Date().toDateString() ? "Today" : fmtDay.format(d);
+      items.push(hd);
+    }
     const li = document.createElement("li");
     const hi = e.kind === "H";
     li.innerHTML = `<span class="arrow ${hi ? "hi" : "lo"}">${hi ? "▲ High" : "▼ Low"}</span>
-      <span class="when">${fmtWhen.format(new Date(e.t * 1000))}</span><span class="ht">${ft(e.h)}</span>`;
-    return li;
-  });
+      <span class="when">${fmtTime.format(d)}</span><span class="ht">${ft(e.h)}</span>`;
+    items.push(li);
+  }
   $("sheet-list").replaceChildren(...items);
 }
+
+function renderSheetCurve(ev) {
+  const hours = state.curveHours;
+  document.querySelectorAll(".range button").forEach((b) => b.setAttribute("aria-pressed", +b.dataset.hours === hours));
+  drawCurve($("sheet-curve"), ev, { w: 400, h: 140, hours });
+  const ticks = [];
+  if (hours <= 24) {
+    ticks.push("Now", "+6h", "+12h", "+18h", "+24h");
+  } else {
+    const fmtWd = new Intl.DateTimeFormat(undefined, { weekday: "short" });
+    for (let i = 0; i <= DETAIL_DAYS; i++) ticks.push(i === 0 ? "Now" : fmtWd.format(new Date(Date.now() + i * 86400e3)));
+  }
+  $("sheet-axis").replaceChildren(...ticks.map((t) => Object.assign(document.createElement("span"), { textContent: t })));
+}
+document.querySelectorAll(".range button").forEach((b) => b.addEventListener("click", () => {
+  state.curveHours = +b.dataset.hours;
+  const ev = state.selected && state.weekly.get(state.selected.id);
+  if (ev) renderSheetCurve(ev); else document.querySelectorAll(".range button").forEach((x) => x.setAttribute("aria-pressed", x === b));
+}));
 
 function updateUseButton() {
   const mine = state.selected && state.selected.id === state.myBeach.id;
@@ -234,7 +279,7 @@ $("mybeach").addEventListener("click", () => {
 });
 
 // Like the widget, refresh just after each tide turn; a minute tick is simple and cheap.
-setInterval(() => { renderMyBeach(); if (state.selected && state.forecasts.has(state.selected.id)) renderSheet(state.selected, state.forecasts.get(state.selected.id)); }, 60_000);
+setInterval(() => { renderMyBeach(); if (state.selected && state.weekly.has(state.selected.id)) renderSheet(state.selected, state.weekly.get(state.selected.id)); }, 60_000);
 
 // ---------- search ----------
 let results = [], active = -1;

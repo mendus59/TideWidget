@@ -33,6 +33,7 @@ Live at **https://mendus59.github.io/TideWidget/** (deployed by `.github/workflo
 
 - Map tiles come from OpenStreetMap (tile.openstreetmap.org), so no API key is needed. The browser calls NOAA directly (the API sends CORS headers).
 - The deploy snapshots NOAA's station list into `stations.json`; the page falls back to the live API if it is missing.
+- The station sheet shows a full week: a 24-hour or 7-day curve and every high and low for the next 7 days, grouped by day.
 - **My beach** is saved in the browser (localStorage); San Francisco is the default.
 - Run locally: `cd web && python3 -m http.server`, then open http://localhost:8000. Tests: `cd web && npm test`.
 - First deploy only: in the repo's **Settings → Pages**, set Source to **GitHub Actions**.
