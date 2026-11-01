@@ -79,9 +79,10 @@ const dark = matchMedia("(prefers-color-scheme: dark)").matches;
 const map = L.map("map", { preferCanvas: true, zoomControl: false, worldCopyJump: true })
   .setView([state.myBeach.lat, state.myBeach.lng], 9);
 L.control.zoom({ position: "bottomright" }).addTo(map);
-L.tileLayer(`https://{s}.basemaps.cartocdn.com/${dark ? "dark_all" : "light_all"}/{z}/{x}/{y}{r}.png`, {
-  subdomains: "abcd", maxZoom: 19,
-  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+// OpenStreetMap's standard tiles: no API key. Dark mode is a CSS filter on the tile pane.
+L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  maxZoom: 19,
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
 }).addTo(map);
 const renderer = L.canvas({ padding: 0.5 });
 const UNLOADED = dark ? "#53606f" : "#a7b3c2";

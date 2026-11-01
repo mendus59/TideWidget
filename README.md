@@ -31,7 +31,7 @@ Core logic tests run without Android: `./gradlew -p tidecore test`.
 
 Live at **https://mendus59.github.io/TideWidget/** (deployed by `.github/workflows/pages.yml` on every push to `main` that touches `web/`).
 
-- Map tiles are OpenStreetMap/CARTO, so no Maps key is needed. The browser calls NOAA directly (the API sends CORS headers).
+- Map tiles come from OpenStreetMap (tile.openstreetmap.org), so no API key is needed. The browser calls NOAA directly (the API sends CORS headers).
 - The deploy snapshots NOAA's station list into `stations.json`; the page falls back to the live API if it is missing.
 - **My beach** is saved in the browser (localStorage); San Francisco is the default.
 - Run locally: `cd web && python3 -m http.server`, then open http://localhost:8000. Tests: `cd web && npm test`.
