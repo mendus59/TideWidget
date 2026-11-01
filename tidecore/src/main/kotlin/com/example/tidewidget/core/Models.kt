@@ -10,6 +10,8 @@ data class Station(
     val state: String? = null,
     val lat: Double,
     val lng: Double,
+    /** For NOAA subordinate stations ("S"): the reference station whose tide curve this one is offset from. */
+    val referenceId: String? = null,
 )
 
 @Serializable
