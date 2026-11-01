@@ -39,7 +39,10 @@ class NoaaClient(private val fetch: suspend (String) -> String = ::httpGet) {
         private val TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
 
         @Serializable private data class StationsResp(val stations: List<S>) {
-            @Serializable data class S(val id: String, val name: String, val state: String? = null, val lat: Double, val lng: Double)
+            @Serializable data class S(
+                val id: String, val name: String, val state: String? = null, val lat: Double, val lng: Double,
+                val type: String? = null, val reference_id: String? = null,
+            )
         }
         @Serializable private data class PredResp(val predictions: List<P> = emptyList(), val error: Err? = null) {
             @Serializable data class P(val t: String, val v: String, val type: String)
@@ -47,7 +50,10 @@ class NoaaClient(private val fetch: suspend (String) -> String = ::httpGet) {
         }
 
         fun parseStations(body: String): List<Station> =
-            json.decodeFromString<StationsResp>(body).stations.map { Station(it.id, it.name, it.state?.ifBlank { null }, it.lat, it.lng) }
+            json.decodeFromString<StationsResp>(body).stations.map {
+                val ref = it.reference_id?.ifBlank { null }?.takeIf { r -> it.type == "S" && r != it.id }
+                Station(it.id, it.name, it.state?.ifBlank { null }, it.lat, it.lng, ref)
+            }
 
         fun parsePredictions(body: String): List<TideEvent> {
             val resp = json.decodeFromString<PredResp>(body)

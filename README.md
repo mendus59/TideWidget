@@ -8,6 +8,12 @@ An Android tide app with a weather-map-style tide map and a home-screen widget s
 - **Station sheet**: tap a station to see its 24-hour tide curve, the next six highs and lows, and a **Use for my widget** button.
 - **Widget** (Glance): your beach's name, next high and next low (time and height), plus a 24-hour curve at medium size. It re-renders just after each tide turn from a cached three-day forecast, so it stays correct offline.
 
+- **Your location**: the map opens centered on you (after you allow location), with a button to jump back.
+- **Search**: type a beach, town, or address. The app suggests the closest tide stations with distances, marking the best match.
+- **Week view**: opening a station shows a 7-day tide chart and every high and low for the week.
+- **Areas** (optional tab): NOAA predicts most stations as offsets from a nearby reference station, so those stations rise and fall together. Areas groups them and shows a window for the next high and low across the group.
+- **Widget sizes**: tuned for 1x1 through 2x3 cells. The first row shows the times (more detail as it widens), and a second row adds the tide graph.
+
 ## Layout
 
 | Path | What |
