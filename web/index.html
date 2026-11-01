@@ -46,8 +46,12 @@
     <button id="sheet-close" class="close" type="button" aria-label="Close">✕</button>
     <h2 id="sheet-title"></h2>
     <p id="sheet-sub" class="sub"></p>
-    <svg id="sheet-curve" class="curve" viewBox="0 0 400 140" preserveAspectRatio="none" role="img" aria-label="Tide curve, next 24 hours"></svg>
-    <div class="axis"><span>Now</span><span>+6h</span><span>+12h</span><span>+18h</span><span>+24h</span></div>
+    <div class="range" role="group" aria-label="Curve range">
+      <button type="button" data-hours="24">24 hours</button>
+      <button type="button" data-hours="168" aria-pressed="true">7 days</button>
+    </div>
+    <svg id="sheet-curve" class="curve" viewBox="0 0 400 140" preserveAspectRatio="none" role="img" aria-label="Tide curve"></svg>
+    <div id="sheet-axis" class="axis"></div>
     <ul id="sheet-list" class="events"></ul>
     <button id="sheet-use" class="primary" type="button">Make this my beach</button>
   </section>
