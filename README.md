@@ -1,5 +1,16 @@
 # TideWidget
 
+<!-- site-summary:start -->
+<!-- This section is this project's card on https://mendus59.github.io and is copied there daily.
+     Keep it true of what's on main: one plain-text summary line (max 160 characters), then 1-6 short bullets.
+     See CLAUDE.md ("Site summary"). -->
+A weather-map-style tide map and a home-screen widget for your beach.
+
+- NOAA tide stations drawn as colored dots; drag a slider across the next 24 hours and watch the tide move along the coast.
+- Tap a station for its tide curve, a 7-day chart and every high and low for the week.
+- An Android widget shows your beach's next high and low and stays correct offline.
+<!-- site-summary:end -->
+
 An Android tide app with a weather-map-style tide map and a home-screen widget showing the next high and low tide for your beach.
 
 ## Features
